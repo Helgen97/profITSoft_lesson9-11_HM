@@ -10,5 +10,5 @@ target/
 *.iml
 *.ipr
 
-!/mvnw
-!/mvnw.cmd
+/mvnw
+/mvnw.cmd
