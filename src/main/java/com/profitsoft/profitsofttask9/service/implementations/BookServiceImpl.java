@@ -14,8 +14,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.persistence.criteria.Predicate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -67,15 +72,27 @@ public class BookServiceImpl implements BookService {
     }
 
     private Page<Book> getBookPageByQuery(BookSearchDto bookQuery, PageRequest pageRequest) {
-        if (bookQuery.getName() != null && bookQuery.getPublicationDate() == null) {
-            return bookRepo.findByName(bookQuery.getName(), pageRequest);
-        } else if (bookQuery.getPublicationDate() != null && bookQuery.getName() == null) {
-            return bookRepo.findByPublicationDate(bookQuery.getPublicationDate(), pageRequest);
-        } else if (bookQuery.getName() != null && bookQuery.getPublicationDate() != null) {
-            return bookRepo.findByNameAndPublicationDate(bookQuery.getName(), bookQuery.getPublicationDate(), pageRequest);
-        } else {
-            return bookRepo.findAll(pageRequest);
+        if (bookQuery.getName() == null && bookQuery.getPublicationDate() == null) {
+            bookRepo.findAll(pageRequest);
         }
+
+        return bookRepo.findAll(getBookQuery(bookQuery), pageRequest);
+    }
+
+    private Specification<Book> getBookQuery(BookSearchDto bookQuery) {
+        return (root, query, criteriaBuilder) -> {
+            List<Predicate> predicateList = new ArrayList<>();
+
+            if (bookQuery.getName() != null) {
+                predicateList.add(criteriaBuilder.like(
+                        criteriaBuilder.lower(root.get("name")), "%" + bookQuery.getName() + "%"));
+            }
+            if (bookQuery.getPublicationDate() != null) {
+                predicateList.add(criteriaBuilder.equal(root.get("publicationDate"), bookQuery.getPublicationDate()));
+            }
+
+            return criteriaBuilder.and(predicateList.toArray(new Predicate[0]));
+        };
     }
 
     private Page<BookInfoDto> convertEntityPageToDtoPage(Page<Book> bookPage) {
@@ -103,7 +120,8 @@ public class BookServiceImpl implements BookService {
     @Override
     @Transactional
     public void deleteBook(Long id) {
-        if(!bookRepo.existsById(id)) throw new NotFoundException("Cannot delete book with id %d. Book doesn't exist".formatted(id));
+        if (!bookRepo.existsById(id))
+            throw new NotFoundException("Cannot delete book with id %d. Book doesn't exist".formatted(id));
 
         bookRepo.deleteById(id);
     }

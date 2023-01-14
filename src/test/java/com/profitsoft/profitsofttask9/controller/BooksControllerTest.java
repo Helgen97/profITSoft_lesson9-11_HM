@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.profitsoft.profitsofttask9.ProfitsoftTask9Application;
 import com.profitsoft.profitsofttask9.dto.BookCreateDto;
 import com.profitsoft.profitsofttask9.dto.BookFullDetailsDto;
+import com.profitsoft.profitsofttask9.dto.BookSearchDto;
 import com.profitsoft.profitsofttask9.exceptions.NotFoundException;
 import com.profitsoft.profitsofttask9.service.implementations.BookServiceImpl;
 import org.junit.jupiter.api.Test;
@@ -83,7 +84,100 @@ class BooksControllerTest {
     }
 
     @Test
-    void searchBooks() {
+    void searchBooks__whenSearchByOnlyByName__thenStatusIs200AndGetPageOfBooks() throws Exception {
+        BookSearchDto query = BookSearchDto
+                .builder()
+                .name("Harry")
+                .build();
+
+        mvc
+                .perform(
+                        post("/api/books/_search")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(query)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isNotEmpty())
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content").isNotEmpty())
+                .andExpect(jsonPath("$.pageable.pageNumber").value(0))
+                .andExpect(jsonPath("$.pageable.pageSize").value(5));
+    }
+
+    @Test
+    void searchBooks__whenSearchByOnlyByPublicationDate__thenStatusIs200AndGetPageOfBooks() throws Exception {
+        BookSearchDto query = BookSearchDto
+                .builder()
+                .publicationDate(LocalDate.of(1997, 6, 26))
+                .build();
+
+        mvc
+                .perform(
+                        post("/api/books/_search")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(query)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isNotEmpty())
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content").isNotEmpty())
+                .andExpect(jsonPath("$.pageable.pageNumber").value(0))
+                .andExpect(jsonPath("$.pageable.pageSize").value(5));
+    }
+
+    @Test
+    void searchBooks__whenSearchByAllFields__thenStatusIs200AndGetPageOfBooks() throws Exception {
+        BookSearchDto query = BookSearchDto
+                .builder()
+                .name("Harry")
+                .publicationDate(LocalDate.of(1997, 6, 26))
+                .build();
+
+        mvc
+                .perform(
+                        post("/api/books/_search")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(query)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isNotEmpty())
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content").isNotEmpty())
+                .andExpect(jsonPath("$.pageable.pageNumber").value(0))
+                .andExpect(jsonPath("$.pageable.pageSize").value(5));
+    }
+
+    @Test
+    void searchBooks__whenSearchByAllFieldsWithPageParameters__thenStatusIs200AndGetPageOfBooks() throws Exception {
+        BookSearchDto query = BookSearchDto
+                .builder()
+                .name("Harry")
+                .publicationDate(LocalDate.of(1997, 6, 26))
+                .page(1)
+                .size(1)
+                .build();
+
+        mvc
+                .perform(
+                        post("/api/books/_search")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(query)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isNotEmpty())
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.pageable.pageNumber").value(1))
+                .andExpect(jsonPath("$.pageable.pageSize").value(1));
+    }
+
+    @Test
+    void searchBooks__whenSearchQueryIsEmpty__thenStatusIs200AndGetPageOfBooks() throws Exception {
+        mvc
+                .perform(
+                        post("/api/books/_search")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isNotEmpty())
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.pageable.pageNumber").value(0))
+                .andExpect(jsonPath("$.pageable.pageSize").value(5));
     }
 
     @Test
