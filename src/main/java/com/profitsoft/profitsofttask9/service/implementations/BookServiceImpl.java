@@ -84,8 +84,7 @@ public class BookServiceImpl implements BookService {
             List<Predicate> predicateList = new ArrayList<>();
 
             if (bookQuery.getName() != null) {
-                predicateList.add(criteriaBuilder.like(
-                        criteriaBuilder.lower(root.get("name")), "%" + bookQuery.getName() + "%"));
+                predicateList.add(criteriaBuilder.equal(root.get("name"), bookQuery.getName()));
             }
             if (bookQuery.getPublicationDate() != null) {
                 predicateList.add(criteriaBuilder.equal(root.get("publicationDate"), bookQuery.getPublicationDate()));

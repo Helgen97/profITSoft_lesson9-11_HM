@@ -87,7 +87,7 @@ class BooksControllerTest {
     void searchBooks__whenSearchByOnlyByName__thenStatusIs200AndGetPageOfBooks() throws Exception {
         BookSearchDto query = BookSearchDto
                 .builder()
-                .name("Harry")
+                .name("Harry Potter and the Philosopher's Stone")
                 .build();
 
         mvc
@@ -127,7 +127,7 @@ class BooksControllerTest {
     void searchBooks__whenSearchByAllFields__thenStatusIs200AndGetPageOfBooks() throws Exception {
         BookSearchDto query = BookSearchDto
                 .builder()
-                .name("Harry")
+                .name("Harry Potter and the Philosopher's Stone")
                 .publicationDate(LocalDate.of(1997, 6, 26))
                 .build();
 
